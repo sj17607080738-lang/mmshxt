@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DiseaseList } from './components/DiseaseList';
 import { AuditPanel } from './components/AuditPanel';
 import { AuditHistory } from './components/AuditHistory';
@@ -8,8 +8,28 @@ import { AuditRecord } from './types';
 
 const App: React.FC = () => {
   const [selectedDiseaseId, setSelectedDiseaseId] = useState<number | null>(diseaseDatabase[0]?.id || null);
-  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
+  
+  // Initialize from LocalStorage to prevent data loss on refresh
+  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('jiangxi_audit_records');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to load records", e);
+      return [];
+    }
+  });
+
   const [showHistory, setShowHistory] = useState(false);
+
+  // Save to LocalStorage whenever records change
+  useEffect(() => {
+    try {
+      localStorage.setItem('jiangxi_audit_records', JSON.stringify(auditRecords));
+    } catch (e) {
+      console.error("Failed to save records", e);
+    }
+  }, [auditRecords]);
 
   const selectedDisease = diseaseDatabase.find(d => d.id === selectedDiseaseId);
 
